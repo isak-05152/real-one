@@ -555,9 +555,11 @@ def show_account_menu(platform_name, account):
     ctk.CTkButton(menu, text="Copy Password", command=copy_password).pack(fill="x", padx=5, pady=3)
 
     def delete_account():
-        accounts_data[platform_name].remove(account)
+        if messagebox.askyesno("confirm Deletion",f"Are you sure you want to delete the account details for '{account['login_id']}'?"):
+         accounts_data[platform_name].remove(account)
+         render_accounts(platform_name)
         close_active_menu()
-        render_accounts(platform_name)
+    
 
     ctk.CTkButton(menu, text="Delete", fg_color="darkred", hover_color="red", command=delete_account).pack(fill="x", padx=5, pady=3)
     menu.bind("<FocusOut>", lambda e: close_active_menu())
