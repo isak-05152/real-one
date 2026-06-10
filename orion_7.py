@@ -6,7 +6,7 @@
 import customtkinter as ctk
 from tkinter import messagebox
 
-ctk.set_appearance_mode("dark")
+ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
 
 # =========================================================
@@ -23,6 +23,7 @@ root.title("Password Manager")
 
 platforms = []
 accounts_data = {}
+active_menu = None  # Tracks open dropdown menus to prevent duplicates
 
 # =========================================================
 # HELPER
@@ -32,6 +33,14 @@ def clear_window():
     for widget in root.winfo_children():
         widget.destroy()
 
+def close_active_menu():
+    global active_menu
+    if active_menu is not None:
+        try:
+            active_menu.destroy()
+        except:
+            pass
+        active_menu = None
 
 # =========================================================
 # SET MASTER PASSWORD WINDOW
@@ -47,7 +56,6 @@ def toggle_set_password():
     else:
         set_password_entry.configure(show="•")
         confirm_password_entry.configure(show="•")
-
 
 def save_master_password():
     password = set_password_entry.get()
@@ -66,7 +74,6 @@ def save_master_password():
     # ====================================================
     show_login_window()
 
-
 def show_set_master_window():
     global set_password_entry
     global confirm_password_entry
@@ -75,23 +82,26 @@ def show_set_master_window():
     clear_window()
     set_password_visible = False
 
-    frame = ctk.CTkFrame(root, width=350, height=320)
-    frame.place(relx=0.5, rely=0.5, anchor="center")
+    frame = ctk.CTkFrame(root, width=600, height=600)
+    frame.place(relx=0.5, rely=0.2, anchor="center")
 
     title = ctk.CTkLabel(frame, text="Set Master Password", font=("Arial", 24, "bold"))
     title.pack(pady=(30, 20))
 
-    set_password_entry = ctk.CTkEntry(frame, width=250, placeholder_text="Enter Password", show="*")
-    set_password_entry.pack(pady=10)
+    set_password_entry = ctk.CTkEntry(frame, width=250, placeholder_text="Enter Password", show="•")
+    set_password_entry.pack(pady=5)
 
-    confirm_password_entry = ctk.CTkEntry(frame, width=250, placeholder_text="Confirm Password", show="*")
+    confirm_password_entry = ctk.CTkEntry(frame, width=250, placeholder_text="Confirm Password", show="•")
     confirm_password_entry.pack(pady=10)
 
-    toggle_btn = ctk.CTkButton(frame, text="Show", width=80, command=toggle_set_password)
-    toggle_btn.pack(pady=10)
+    toggle_btn = ctk.CTkButton(frame, text="👁 ", width=80, command=toggle_set_password)
+    toggle_btn.pack(padx=10)
 
     save_btn = ctk.CTkButton(frame, text="Save Password", command=save_master_password)
     save_btn.pack(pady=20)
+
+    i_label = ctk.CTkLabel(frame, text="HINT: password should be at least 8 characters", text_color="black")
+    i_label.pack(pady=(0, 5))
 
 
 # =========================================================
@@ -107,14 +117,12 @@ def toggle_login_password():
     else:
         login_password_entry.configure(show="•")
 
-
 def unlock_vault():
     entered_password = login_password_entry.get()
     # ====================================================
     # BACKEND: verify master password here
     # ====================================================
     show_platform_window()
-
 
 def show_login_window():
     global login_password_entry
@@ -126,13 +134,13 @@ def show_login_window():
     frame = ctk.CTkFrame(root, width=350, height=260)
     frame.place(relx=0.5, rely=0.5, anchor="center")
 
-    title = ctk.CTkLabel(frame, text="Unlock Vault", font=("Arial", 24, "bold"))
+    title = ctk.CTkLabel(frame, text="ENTER MASTER PASSWORD", font=("Arial", 24, "bold"))
     title.pack(pady=(30, 20))
 
     login_password_entry = ctk.CTkEntry(frame, width=250, placeholder_text="Master Password", show="•")
     login_password_entry.pack(pady=10)
 
-    toggle_btn = ctk.CTkButton(frame, text="Show", width=80, command=toggle_login_password)
+    toggle_btn = ctk.CTkButton(frame, text="👁 ", width=80, command=toggle_login_password)
     toggle_btn.pack(pady=10)
 
     unlock_btn = ctk.CTkButton(frame, text="Unlock", command=unlock_vault)
@@ -195,10 +203,10 @@ def show_platform_window():
     title = ctk.CTkLabel(top_frame, text="Platforms", font=("Arial", 28, "bold"))
     title.pack(side="left", padx=10)
 
-    change_btn = ctk.CTkButton(top_frame, text="🔑", width=40, command=open_change_master_popup)
+    change_btn = ctk.CTkButton(top_frame, text="change M-password", width=40, command=open_change_master_popup)
     change_btn.pack(side="right", padx=5)
 
-    logout_btn = ctk.CTkButton(top_frame, text="Logout", command=logout)
+    logout_btn = ctk.CTkButton(top_frame, width=40, text="Logout", fg_color="#F54927", hover_color="#F54927", text_color="white", command=logout)
     logout_btn.pack(side="right", padx=5)
 
     separator = ctk.CTkFrame(root, height=2)
@@ -207,7 +215,7 @@ def show_platform_window():
     platform_frame = ctk.CTkScrollableFrame(root, width=700, height=400)
     platform_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
-    add_btn = ctk.CTkButton(root, text="+ Add Platform", command=open_add_platform_popup)
+    add_btn = ctk.CTkButton(root, text="+ Add Platform", fg_color="#8C8C3C", hover_color="#8C8C3C", command=open_add_platform_popup)
     add_btn.pack(pady=10)
 
     render_platforms()
@@ -231,7 +239,7 @@ def render_platforms():
         row.pack(fill="x", pady=5)
 
         platform_btn = ctk.CTkButton(
-            row, text=platform, fg_color="transparent", anchor="w",
+            row, text=platform, fg_color="pink", hover_color="pink", text_color="black", anchor="w",
             command=lambda p=platform: open_account_window(p)
         )
         platform_btn.pack(side="left", fill="x", expand=True, padx=10, pady=10)
@@ -253,7 +261,7 @@ def open_add_platform_popup():
     title = ctk.CTkLabel(popup, text="Add Platform", font=("Arial", 20, "bold"))
     title.pack(pady=(20, 15))
 
-    entry = ctk.CTkEntry(popup, width=250, placeholder_text="Platform Name")
+    entry = ctk.CTkEntry(popup, width=250, fg_color="#8F6F6F", text_color="black", placeholder_text_color="black", placeholder_text="Platform Name")
     entry.pack(pady=10)
 
     def add_platform():
@@ -270,14 +278,11 @@ def open_add_platform_popup():
         platforms.append(name)
         accounts_data[name] = []
 
-        # ====================================================
-        # BACKEND: add platform to database here
-        # ====================================================
         render_platforms()
         popup.grab_release()
         popup.destroy()
 
-    add_btn = ctk.CTkButton(popup, text="Add", command=add_platform)
+    add_btn = ctk.CTkButton(popup, text="Add", fg_color="#332F3B", hover_color="#332F3B", command=add_platform)
     add_btn.pack(pady=20)
 
     popup.wait_visibility()
@@ -289,6 +294,12 @@ def open_add_platform_popup():
 # =========================================================
 
 def show_platform_menu(platform_name):
+    global active_menu
+    
+    if active_menu is not None:
+        close_active_menu()
+        return
+
     menu = ctk.CTkToplevel(root)
     menu.geometry("120x90")
     menu.overrideredirect(True)
@@ -296,12 +307,16 @@ def show_platform_menu(platform_name):
     x = root.winfo_pointerx()
     y = root.winfo_pointery()
     menu.geometry(f"+{x}+{y}")
+    
+    active_menu = menu
 
-    edit_btn = ctk.CTkButton(menu, text="Edit", command=lambda: [menu.destroy(), open_edit_platform_popup(platform_name)])
+    edit_btn = ctk.CTkButton(menu, text="Edit", command=lambda: [close_active_menu(), open_edit_platform_popup(platform_name)])
     edit_btn.pack(fill="x", padx=5, pady=5)
 
-    delete_btn = ctk.CTkButton(menu, text="Delete", fg_color="darkred", hover_color="red", command=lambda: [menu.destroy(), open_delete_platform_popup(platform_name)])
+    delete_btn = ctk.CTkButton(menu, text="Delete", fg_color="darkred", hover_color="red", command=lambda: [close_active_menu(), open_delete_platform_popup(platform_name)])
     delete_btn.pack(fill="x", padx=5, pady=5)
+
+    menu.bind("<FocusOut>", lambda e: close_active_menu())
 
 
 # =========================================================
@@ -361,9 +376,6 @@ def open_delete_platform_popup(platform_name):
         platforms.remove(platform_name)
         del accounts_data[platform_name]
 
-        # ====================================================
-        # BACKEND: delete platform from database here
-        # ====================================================
         render_platforms()
         popup.grab_release()
         popup.destroy()
@@ -385,16 +397,16 @@ def open_account_window(platform_name):
     top_frame = ctk.CTkFrame(root)
     top_frame.pack(fill="x", padx=10, pady=10)
 
-    back_btn = ctk.CTkButton(top_frame, text="← Back", command=show_platform_window)
+    back_btn = ctk.CTkButton(top_frame, text="<--", fg_color="#1C3327", hover_color="#1C3327", command=show_platform_window)
     back_btn.pack(side="left", padx=5)
 
     title = ctk.CTkLabel(top_frame, text=platform_name, font=("Arial", 26, "bold"))
     title.pack(side="left", padx=20)
 
-    change_btn = ctk.CTkButton(top_frame, text="🔑", width=40, command=open_change_master_popup)
+    change_btn = ctk.CTkButton(top_frame, text="change M-password", command=open_change_master_popup)
     change_btn.pack(side="right", padx=5)
 
-    logout_btn = ctk.CTkButton(top_frame, text="Logout", command=logout)
+    logout_btn = ctk.CTkButton(top_frame, text="Logout", fg_color="#F20A0A", hover_color="#F20A0A", width=40, command=logout)
     logout_btn.pack(side="right", padx=5)
 
     separator = ctk.CTkFrame(root, height=2)
@@ -428,20 +440,20 @@ def open_account_window(platform_name):
                 else:
                     label.configure(text="••••••••")
 
-            view_btn = ctk.CTkButton(row, text="👁", width=40, command=toggle_password)
+            view_btn = ctk.CTkButton(row, text="👁  ", width=40, command=toggle_password)
             view_btn.pack(side="left", padx=10)
 
-    add_btn = ctk.CTkButton(root, text="+ Add Account", command=lambda: open_add_account_popup(platform_name))
+    add_btn = ctk.CTkButton(root, text="+ Add Ac", fg_color="#D9367A", hover_color="#D9367A", command=lambda: open_add_account_popup(platform_name))
     add_btn.pack(pady=10)
 
 
 # =========================================================
-# ADD ACCOUNT
+# ADD ACCOUNT (1-SECOND TIMER ON EYE BUTTON)
 # =========================================================
 
 def open_add_account_popup(platform_name):
     popup = ctk.CTkToplevel(root)
-    popup.geometry("400x280")
+    popup.geometry("400x320")
     popup.title("Add Account")
     popup.transient(root)
 
@@ -452,7 +464,16 @@ def open_add_account_popup(platform_name):
     login_entry.pack(pady=10)
 
     password_entry = ctk.CTkEntry(popup, width=280, placeholder_text="Password", show="•")
-    password_entry.pack(pady=10)
+    password_entry.pack(pady=5)
+
+    def flash_visibility():
+        # Temporarily show password
+        password_entry.configure(show="")
+        # Automatically hide it again after 1000 milliseconds (1 second)
+        popup.after(1000, lambda: password_entry.configure(show="•"))
+
+    eye_btn = ctk.CTkButton(popup, text="👁 ", width=60, command=flash_visibility)
+    eye_btn.pack(pady=5)
 
     def add_account():
         login_id = login_entry.get().strip()
@@ -467,27 +488,24 @@ def open_add_account_popup(platform_name):
             "password": password
         })
 
-        # ====================================================
-        # BACKEND: encrypt password and save account here
-        # ====================================================
         popup.grab_release()
         popup.destroy()
         open_account_window(platform_name)
 
-    add_btn = ctk.CTkButton(popup, text="Add", command=add_account)
-    add_btn.pack(pady=20)
+    add_btn = ctk.CTkButton(popup, text="Add", fg_color="#332F3B", hover_color="#332F3B", command=add_account)
+    add_btn.pack(pady=15)
 
     popup.wait_visibility()
     popup.grab_set()
 
 
 # =========================================================
-# EDIT ACCOUNT CREDENTIALS (NEW POPUP)
+# EDIT ACCOUNT CREDENTIALS (1-SECOND TIMER ON EYE BUTTON)
 # =========================================================
 
 def open_edit_account_popup(platform_name, account):
     popup = ctk.CTkToplevel(root)
-    popup.geometry("400x280")
+    popup.geometry("400x320")
     popup.title("Edit Account")
     popup.transient(root)
 
@@ -500,7 +518,16 @@ def open_edit_account_popup(platform_name, account):
 
     password_entry = ctk.CTkEntry(popup, width=280, show="•")
     password_entry.insert(0, account["password"])
-    password_entry.pack(pady=10)
+    password_entry.pack(pady=5)
+
+    def flash_visibility():
+        # Temporarily show password
+        password_entry.configure(show="")
+        # Automatically hide it again after 1000 milliseconds (1 second)
+        popup.after(1000, lambda: password_entry.configure(show="•"))
+
+    eye_btn = ctk.CTkButton(popup, text="👁 ", width=60, command=flash_visibility)
+    eye_btn.pack(pady=5)
 
     def save_account_edit():
         new_login = login_entry.get().strip()
@@ -513,27 +540,24 @@ def open_edit_account_popup(platform_name, account):
         account["login_id"] = new_login
         account["password"] = new_password
 
-        # ====================================================
-        # BACKEND: Update records in database here
-        # ====================================================
         popup.grab_release()
         popup.destroy()
         open_account_window(platform_name)
 
     save_btn = ctk.CTkButton(popup, text="Save Changes", command=save_account_edit)
-    save_btn.pack(pady=20)
+    save_btn.pack(pady=15)
 
     popup.wait_visibility()
     popup.grab_set()
 
 
 # =========================================================
-# CHANGE ACCOUNT PASSWORD INDEPENDENTLY (NEW POPUP)
+# CHANGE ACCOUNT PASSWORD (1-SECOND TIMER ON EYE BUTTON)
 # =========================================================
 
 def open_change_account_password_popup(platform_name, account):
     popup = ctk.CTkToplevel(root)
-    popup.geometry("350x200")
+    popup.geometry("350x240")
     popup.title("Change Password")
     popup.transient(root)
 
@@ -542,7 +566,16 @@ def open_change_account_password_popup(platform_name, account):
 
     password_entry = ctk.CTkEntry(popup, width=250, show="•")
     password_entry.insert(0, account["password"])
-    password_entry.pack(pady=10)
+    password_entry.pack(pady=5)
+
+    def flash_visibility():
+        # Temporarily show password
+        password_entry.configure(show="")
+        # Automatically hide it again after 1000 milliseconds (1 second)
+        popup.after(1000, lambda: password_entry.configure(show="•"))
+
+    eye_btn = ctk.CTkButton(popup, text="👁 ", width=60, command=flash_visibility)
+    eye_btn.pack(pady=5)
 
     def save_password_edit():
         new_password = password_entry.get().strip()
@@ -553,15 +586,12 @@ def open_change_account_password_popup(platform_name, account):
 
         account["password"] = new_password
 
-        # ====================================================
-        # BACKEND: Update entry data in database here
-        # ====================================================
         popup.grab_release()
         popup.destroy()
         open_account_window(platform_name)
 
     save_btn = ctk.CTkButton(popup, text="Update Password", command=save_password_edit)
-    save_btn.pack(pady=15)
+    save_btn.pack(pady=10)
 
     popup.wait_visibility()
     popup.grab_set()
@@ -572,30 +602,32 @@ def open_change_account_password_popup(platform_name, account):
 # =========================================================
 
 def show_account_menu(platform_name, account):
+    global active_menu
+
+    if active_menu is not None:
+        close_active_menu()
+        return
+
     menu = ctk.CTkToplevel(root)
-    menu.geometry("180x240")
+    menu.geometry("180x210")
     menu.overrideredirect(True)
 
     x = root.winfo_pointerx()
     y = root.winfo_pointery()
     menu.geometry(f"+{x}+{y}")
 
-    edit_btn = ctk.CTkButton(
-        menu, text="Edit Login", 
-        command=lambda: [menu.destroy(), open_edit_account_popup(platform_name, account)]
-    )
+    active_menu = menu
+
+    edit_btn = ctk.CTkButton(menu, text="Edit Login", command=lambda: [close_active_menu(), open_edit_account_popup(platform_name, account)])
     edit_btn.pack(fill="x", padx=5, pady=3)
 
-    password_btn = ctk.CTkButton(
-        menu, text="Change Password", 
-        command=lambda: [menu.destroy(), open_change_account_password_popup(platform_name, account)]
-    )
+    password_btn = ctk.CTkButton(menu, text="Change Password", command=lambda: [close_active_menu(), open_change_account_password_popup(platform_name, account)])
     password_btn.pack(fill="x", padx=5, pady=3)
 
     def copy_login():
         root.clipboard_clear()
         root.clipboard_append(account["login_id"])
-        menu.destroy()
+        close_active_menu()
         messagebox.showinfo("Copied", "Login ID copied")
 
     copy_login_btn = ctk.CTkButton(menu, text="Copy Login", command=copy_login)
@@ -604,7 +636,7 @@ def show_account_menu(platform_name, account):
     def copy_password():
         root.clipboard_clear()
         root.clipboard_append(account["password"])
-        menu.destroy()
+        close_active_menu()
         messagebox.showinfo("Copied", "Password copied")
 
     copy_password_btn = ctk.CTkButton(menu, text="Copy Password", command=copy_password)
@@ -612,14 +644,13 @@ def show_account_menu(platform_name, account):
 
     def delete_account():
         accounts_data[platform_name].remove(account)
-        # ====================================================
-        # BACKEND: delete single account entry from DB here
-        # ====================================================
-        menu.destroy()
+        close_active_menu()
         open_account_window(platform_name)
 
     delete_btn = ctk.CTkButton(menu, text="Delete", fg_color="darkred", hover_color="red", command=delete_account)
     delete_btn.pack(fill="x", padx=5, pady=3)
+
+    menu.bind("<FocusOut>", lambda e: close_active_menu())
 
 
 # =========================================================
